@@ -30,6 +30,9 @@ function App() {
     console.log(country);
     setShowSingle(country);
   };
+  if (!countries) {
+    return <p>Loading...</p>;
+  }
   return (
     <>
       <p>
