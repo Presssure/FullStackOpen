@@ -1,3 +1,5 @@
+import axios from "axios";
+import personService from "../Services/persons";
 const PersonForm = ({
   persons,
   setPersons,
@@ -6,28 +8,66 @@ const PersonForm = ({
   setNumber,
   newName,
   number,
+  updateNotification,
 }) => {
   const onAdd = (event) => {
     event.preventDefault();
-
+    const personObject = {
+      name: newName,
+      number: number,
+    };
     let same = false;
     for (const i of persons) {
       if (i.name === newName) {
-        alert(`${newName} is already added to phone book`);
+        if (i.number !== number) {
+          if (
+            window.confirm(
+              `${newName} is already added to phone book, replace the old number with a new one?`
+            )
+          ) {
+            personService
+              .update(i.id, personObject)
+              .then((response) => {
+                setNewName("");
+                setNumber("");
+                setFilteredList(
+                  persons.map((person) =>
+                    person.id === response.id
+                      ? { ...person, number: number }
+                      : person
+                  )
+                );
+                setPersons(
+                  persons.map((person) =>
+                    person.id === response.id
+                      ? { ...person, number: number }
+                      : person
+                  )
+                );
+                updateNotification(response, "update");
+              })
+              .catch((error) => {
+                updateNotification(personObject, "deleted");
+                setPersons(persons.filter((p) => p.id !== i.id));
+                setFilteredList(persons.filter((p) => p.id !== i.id));
+              });
+          }
+        } else {
+          alert(`${newName} is already added to phone book`);
+        }
+
         same = true;
         break;
       }
     }
     if (!same) {
-      const personObject = {
-        name: newName,
-        number: number,
-        id: persons.length + 1,
-      };
-      setPersons(persons.concat(personObject));
-      setFilteredList(persons.concat(personObject));
-      setNewName("");
-      setNumber("");
+      personService.create(personObject).then((returnedData) => {
+        setPersons(persons.concat(returnedData));
+        setFilteredList(persons.concat(returnedData));
+        setNewName("");
+        setNumber("");
+        updateNotification(returnedData, "add");
+      });
     }
   };
 
