@@ -1,3 +1,8 @@
+if (process.argv.length < 3) {
+  console.log("give password as argument");
+  process.exit(1);
+}
+
 // Defines an event handler used to handle HTTP GET requests for app /root
 const express = require("express");
 const app = express();
@@ -21,6 +26,22 @@ const requestLogger = (request, response, next) => {
   next();
 };
 
+const mongoose = require("mongoose");
+
+const password = process.argv[2];
+
+const url = `mongodb+srv://fullstack:${password}@cluster0.9qjac5i.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`;
+
+mongoose.set("strictQuery", false);
+mongoose.connect(url);
+
+const noteSchema = new mongoose.Schema({
+  content: String,
+  important: Boolean,
+});
+
+const Note = mongoose.model("Note", noteSchema);
+
 let notes = [
   {
     id: 1,
@@ -39,12 +60,22 @@ let notes = [
   },
 ];
 
+noteSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
+
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
 });
 
 app.get("/api/notes", (request, response) => {
-  response.json(notes);
+  Note.find({}).then((notes) => {
+    response.json(notes);
+  });
 });
 
 app.get("/api/notes/:id", (request, response) => {
