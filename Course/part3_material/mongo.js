@@ -7,7 +7,7 @@ if (process.argv.length < 3) {
 
 const password = process.argv[2];
 
-const url = `mongodb+srv://fullstack:FullStack3!@cluster0.9qjac5i.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`;
+// const url = the URL
 
 mongoose.set("strictQuery", false);
 

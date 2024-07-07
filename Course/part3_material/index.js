@@ -28,30 +28,6 @@ app.use(requestLogger);
 // allows cross resource sharing
 app.use(cors());
 
-// const mongoose = require("mongoose");
-
-// const password = process.argv[2];
-
-// const url = `mongodb+srv://fullstack:${password}@cluster0.9qjac5i.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`;
-
-// mongoose.set("strictQuery", false);
-// mongoose.connect(url);
-
-// const noteSchema = new mongoose.Schema({
-//   content: String,
-//   important: Boolean,
-// });
-
-// const Note = mongoose.model("Note", noteSchema);
-
-// noteSchema.set("toJSON", {
-//   transform: (document, returnedObject) => {
-//     returnedObject.id = returnedObject._id.toString();
-//     delete returnedObject._id;
-//     delete returnedObject.__v;
-//   },
-// });
-
 let notes = [
   {
     id: 1,
@@ -108,33 +84,25 @@ app.get("/api/notes/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-const generateId = () => {
-  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
-  return maxId + 1;
-};
-
-app.post("/api/notes", (request, response) => {
-  const body = request.body;
-  // console.log(body);
-  if (!body.content) {
-    return response.status(400).json({ error: "content missing" });
-  }
-
-  const note = {
-    content: body.content,
-    important: Boolean(body.important) || false,
-    id: generateId(),
-  };
-
-  notes = notes.concat(note);
-  console.log(note);
-  response.json(note);
+app.delete("/api/notes/:id", (request, response, next) => {
+  Note.findByIdAndDelete(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
-app.delete("/api/notes/:id", (request, response) => {
-  const id = Number(request.params.id);
-  notes = notes.filter((note) => note.id !== id);
-  response.status(204).end();
+app.put("/api/notes/:id", (request, response, next) => {
+  const body = request.body;
+  const note = {
+    content: body.content,
+    important: body.important,
+  };
+  Note.findByIdAndUpdate(request.params.id, note, { new: true })
+    .then((updateNote) => {
+      response.json(updateNote);
+    })
+    .catch((error) => next(error));
 });
 
 const unknownEndpoint = (request, response) => {
