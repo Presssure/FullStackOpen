@@ -48,6 +48,13 @@ const App = () => {
   const [allClicks, setAll] = useState([]);
   const [total, setTotal] = useState(0);
 
+  const [value, setValue] = useState(10);
+
+  const setToValue = (newValue) => () => {
+    setValue(newValue);
+    console.log(`value set to ${newValue}`);
+  };
+
   const handleLeftClick = () => {
     setAll(allClicks.concat("L"));
     setLeft(left + 1);
@@ -67,6 +74,10 @@ const App = () => {
       <Button onClick={handleRightClick} text="right" />
       {right}
       <History allClicks={allClicks} />
+      {value}
+      <Button onClick={setToValue(1000)} text="set to 1000" />
+      <Button onClick={setToValue(0)} text="set to 0" />
+      <Button onClick={setToValue(value + 1)} text="increment" />
     </div>
   );
 };
